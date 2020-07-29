@@ -42,13 +42,20 @@ const flappyBird = {
     altura: 24,
     canvasX: 10,
     canvasY: 50,
+    gravidade: 0.25,
+    velocidade: 0,
+    atualiza(){
+        flappyBird.velocidade = flappyBird.velocidade + flappyBird.gravidade;
+        console.log(flappyBird.velocidade);
+        flappyBird.canvasY = flappyBird.canvasY + flappyBird.velocidade;        
+    },
     desenha(){
         contexto.drawImage(//(image(sprites), sx.spriteX, sy.spriteY, sWidth.largura, sHeight.altura, dx.vancasX, dy.canvasY, dWidth.largura, dHeight.altura);
-            sprites,
-            flappyBird.spriteX, flappyBird.spriteY, //inicio do recorte X>,Y^;
-            flappyBird.largura, flappyBird.altura, //largura, altura recorte na sprite; 
-            flappyBird.canvasX, flappyBird.canvasY, // onde vai ser desenhado no canvas;
-            flappyBird.largura, flappyBird.altura, //largura, altura, dentro do canvas;
+        sprites,
+        flappyBird.spriteX, flappyBird.spriteY, //inicio do recorte X>,Y^;
+        flappyBird.largura, flappyBird.altura, //largura, altura recorte na sprite; 
+        flappyBird.canvasX, flappyBird.canvasY, // onde vai ser desenhado no canvas;
+        flappyBird.largura, flappyBird.altura, //largura, altura, dentro do canvas;
         );
     }
 }
@@ -62,11 +69,11 @@ const floor = {
     canvasY: canvas.height - 112,
     desenha(){
         contexto.drawImage(//(image(sprites), sx.spriteX, sy.spriteY, sWidth.largura, sHeight.altura, dx.vancasX, dy.canvasY, dWidth.largura, dHeight.altura);
-            sprites,
-            floor.spriteX, floor.spriteY, //inicio do recorte X>,Y^;
-            floor.largura, floor.altura, //largura, altura recorte na sprite; 
-            floor.canvasX, floor.canvasY, // onde vai ser desenhado no canvas;
-            floor.largura, floor.altura, //largura, altura, dentro do canvas;
+        sprites,
+        floor.spriteX, floor.spriteY, //inicio do recorte X>,Y^;
+        floor.largura, floor.altura, //largura, altura recorte na sprite; 
+        floor.canvasX, floor.canvasY, // onde vai ser desenhado no canvas;
+        floor.largura, floor.altura, //largura, altura, dentro do canvas;
         );
         contexto.drawImage(
             sprites,
@@ -74,16 +81,19 @@ const floor = {
             floor.largura, floor.altura, //largura, altura recorte na sprite; 
             (floor.canvasX + floor.largura), floor.canvasY, // onde vai ser desenhado no canvas;
             floor.largura, floor.altura, //largura, altura, dentro do canvas;
-        );
+            );
+        }
+        
     }
-
-}
-
-
-function loop(){
-    background.desenha();
-    flappyBird.desenha();
-    floor.desenha();
+    
+    
+    function loop(){
+        flappyBird.atualiza();
+        
+        background.desenha();
+        flappyBird.desenha();
+        floor.desenha();
+        
     requestAnimationFrame(loop);
 }
 
