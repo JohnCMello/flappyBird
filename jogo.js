@@ -1,6 +1,6 @@
 console.log( "[John's Flappy Bird]");
 
-
+let frames = 0;
 const colisionSound = new Audio()
 colisionSound.src = './assets/sounds/hit.wav'
 const sprites = new Image();
@@ -38,30 +38,43 @@ const background = {
     }
 }
 //[Floor]
-const floor = {
-    spriteX: 0,
-    spriteY: 610,
-    width: 224,
-    height: 112,
-    canvasX: 0,
-    canvasY: canvas.height - 112,
-    print(){
-        contexto.drawImage(//(image(sprites), sx.spriteX, sy.spriteY, sWidth.width, sHeight.height, dx.vancasX, dy.canvasY, dWidth.width, dHeight.height);
-            sprites,
-            floor.spriteX, floor.spriteY, //inicio do recorte X>,Y^;
-            floor.width, floor.height, //width, height recorte na sprite; 
-            floor.canvasX, floor.canvasY, // onde vai ser printdo no canvas;
-            floor.width, floor.height, //width, height, dentro do canvas;
-        );
-        contexto.drawImage(//(image(sprites), sx.spriteX, sy.spriteY, sWidth.width, sHeight.height, dx.vancasX, dy.canvasY, dWidth.width, dHeight.height);
-            sprites,
-            floor.spriteX, floor.spriteY, //inicio do recorte X>,Y^;
-            floor.width, floor.height, //width, height recorte na sprite; 
-            (floor.canvasX + floor.width), floor.canvasY, // onde vai ser printdo no canvas;
-            floor.width, floor.height, //width, height, dentro do canvas;
-        );
+function moveFloor(){
+    const floor = {
+        spriteX: 0,
+        spriteY: 610,
+        width: 224,
+        height: 112,
+        canvasX: 0,
+        canvasY: canvas.height - 112,
+        reload(){
+            const floorMovement = 1;
+            const repeatFloor = floor.width / 2;
+            const movement = floor.canvasX - floorMovement;
+
+            floor.canvasX = movement % repeatFloor;
+           
+
+        },
+        print(){
+            contexto.drawImage(//(image(sprites), sx.spriteX, sy.spriteY, sWidth.width, sHeight.height, dx.vancasX, dy.canvasY, dWidth.width, dHeight.height);
+                sprites,
+                floor.spriteX, floor.spriteY, //inicio do recorte X>,Y^;
+                floor.width, floor.height, //width, height recorte na sprite; 
+                floor.canvasX, floor.canvasY, // onde vai ser printdo no canvas;
+                floor.width, floor.height, //width, height, dentro do canvas;
+            );
+            contexto.drawImage(//(image(sprites), sx.spriteX, sy.spriteY, sWidth.width, sHeight.height, dx.vancasX, dy.canvasY, dWidth.width, dHeight.height);
+                sprites,
+                floor.spriteX, floor.spriteY, //inicio do recorte X>,Y^;
+                floor.width, floor.height, //width, height recorte na sprite; 
+                (floor.canvasX + floor.width), floor.canvasY, // onde vai ser printdo no canvas;
+                floor.width, floor.height, //width, height, dentro do canvas;
+            );
+        }
     }
-}
+    return floor;
+};
+
 //[Colision]
 function colidesFloor(flappyBird, floor){
     const flappybirdY = flappyBird.canvasY + flappyBird.height;
@@ -88,7 +101,7 @@ function newBird(){
         gravity: 0.25,
         speed: 0,
         reload(){
-            if(colidesFloor(flappyBird,floor)) {
+            if(colidesFloor(flappyBird,global.floor)) {
                 colisionSound.play();
                 setTimeout(()=>{
 
@@ -99,10 +112,33 @@ function newBird(){
             flappyBird.speed = flappyBird.speed + flappyBird.gravity;
             flappyBird.canvasY = flappyBird.canvasY + flappyBird.speed;        
         },
+        movements: [
+            { spriteX: 0, spriteY: 0 },//asa cima
+            { spriteX: 0, spriteY: 26 },//asa meio
+            { spriteX: 0, spriteY: 52 },//asa baixo
+        ],
+        currentFrame: 0,
+        reloadFrame(){
+            const framesInterval = 8;
+            const overInterval = frames % framesInterval === 0;
+
+            if(overInterval){
+                const frameBase = 1;
+                const increase = frameBase + flappyBird.currentFrame;
+                const repetition = flappyBird.movements.length;
+                flappyBird.currentFrame = increase % repetition;
+                console.log('incremento', increase);
+                console.log('base repetição', repetition);
+                console.log('frame', increase % repetition );
+            }
+        } ,
         print(){
+            flappyBird.reloadFrame();
+            const { spriteX, spriteY } = flappyBird.movements[flappyBird.currentFrame];
+
             contexto.drawImage(//(image(sprites), sx.spriteX, sy.spriteY, sWidth.width, sHeight.height, dx.vancasX, dy.canvasY, dWidth.width, dHeight.height);
                 sprites,
-                flappyBird.spriteX, flappyBird.spriteY, //inicio do recorte X>,Y^;
+                spriteX, spriteY, //inicio do recorte X>,Y^;
                 flappyBird.width, flappyBird.height, //width, height recorte na sprite; 
                 flappyBird.canvasX, flappyBird.canvasY, // onde vai ser printdo no canvas;
                 flappyBird.width, flappyBird.height, //width, height, dentro do canvas;
@@ -145,10 +181,11 @@ const screens = {
     START:{
         restart(){
         global.flappyBird = newBird();
+        global.floor = moveFloor();
         },
         print(){
         background.print();
-        floor.print();
+        global.floor.print();
         global.flappyBird.print();
         startScreen.print();
         },
@@ -156,7 +193,7 @@ const screens = {
             changeScreen(screens.GAME)
         },
         reload(){
-
+            global.floor.reload();
         }
     }
 };
@@ -164,7 +201,7 @@ const screens = {
 screens.GAME = {
     print(){
         background.print();
-        floor.print();
+        global.floor.print();
         global.flappyBird.print();
     },
     click(){
@@ -178,6 +215,8 @@ screens.GAME = {
 function loop(){
     activeScreen.print();
     activeScreen.reload();
+
+    frames = frames + 1;
     requestAnimationFrame(loop);
 }
 
