@@ -127,10 +127,10 @@ function newBird(){
                 const increase = frameBase + flappyBird.currentFrame;
                 const repetition = flappyBird.movements.length;
                 flappyBird.currentFrame = increase % repetition;
-                console.log('incremento', increase);
-                console.log('base repetição', repetition);
-                console.log('frame', increase % repetition );
             }
+            //console.log('incremento', increase);
+            //console.log('base repetição', repetition);
+            //console.log('frame', increase % repetition );
         } ,
         print(){
             flappyBird.reloadFrame();
@@ -147,6 +147,98 @@ function newBird(){
     }
     return flappyBird;
 }
+//[Pipes]
+function createPipes(){
+    const pipes = {
+        width: 52,
+        height: 400,
+        top:{
+        spriteX: 52,
+        spriteY: 169,    
+        },
+        bottom:{
+        spriteX: 0,
+        spriteY: 169,
+        },
+        spacement: 80,
+        print(){
+
+            pipes.pairs.forEach(function(pair){
+                const randomYPipes = pair.y
+                const spacingBetweenPipes = 90; //spacing between pipes
+            
+                //pipe top
+                const pipeTopX = pair.x;
+                const pipeTopY = randomYPipes;
+
+                contexto.drawImage(//(image(sprites), sx.spriteX, sy.spriteY, sWidth.width, sHeight.height, dx.vancasX, dy.canvasY, dWidth.width, dHeight.height);
+                    sprites,
+                    pipes.top.spriteX, pipes.top.spriteY, //inicio do recorte X>,Y^;
+                    pipes.width, pipes.height, //width, height recorte na sprite; 
+                    pipeTopX, pipeTopY, // onde vai ser printdo no canvas;
+                    pipes.width, pipes.height, //width, height, dentro do canvas;
+                );
+                //pipe bottom
+                const pipeBottomX = pair.x;
+                const pipeBottomY = pipes.height + spacingBetweenPipes + randomYPipes;
+
+                contexto.drawImage(//(image(sprites), sx.spriteX, sy.spriteY, sWidth.width, sHeight.height, dx.vancasX, dy.canvasY, dWidth.width, dHeight.height);
+                    sprites,
+                    pipes.bottom.spriteX, pipes.bottom.spriteY, //inicio do recorte X>,Y^;
+                    pipes.width, pipes.height, //width, height recorte na sprite; 
+                    pipeBottomX, pipeBottomY, // onde vai ser printdo no canvas;
+                    pipes.width, pipes.height, //width, height, dentro do canvas;
+                );
+                pair.pipeTop = {
+                    x: pipeTopX,
+                    y: pipes.height + pipeTopY,
+                }
+                pair.pipeBottom = {
+                    x: pipeBottomX,
+                    y: pipeBottomY,
+                }   
+            })
+        },
+        colidesWithPipes(pair){
+            const birdHead = global.flappyBird.canvasY;
+            const birdFeet = global.flappyBird.canvasY + global.flappyBird.height;
+
+            if(global.flappyBird.canvasX >= pair.x){
+                if(birdHead <= pair.pipeBottom.y){
+                  return true;
+                }
+                if(birdFeet >= pair.pipeBottom.y){
+                    return true;
+                }
+            }
+            return false;
+        },
+        pairs: [],
+        reload(){
+            const over100frames = frames % 100 ===0;
+            if(over100frames){
+                console.log('passou 100 frames');
+                pipes.pairs.push({
+                    x: canvas.width,
+                    y: -150 * (Math.random() + 1),
+                });
+            }
+            pipes.pairs.forEach(function(pair){
+                pair.x = pair.x - 2;
+
+                if(pipes.colidesWithPipes(pair)){
+                    console.log('bateu cano');
+                    changeScreen(screens.START)
+                }
+                if(pair.x + pipes.width <= 0){
+                    pipes.pairs.shift();
+                }
+            });
+        }
+    }
+    return pipes;
+}
+
 //[StartScreen]
 const startScreen = {
     spriteX: 134,
@@ -182,9 +274,11 @@ const screens = {
         restart(){
         global.flappyBird = newBird();
         global.floor = moveFloor();
+        global.pipes = createPipes();
         },
         print(){
         background.print();
+        global.pipes.print();
         global.floor.print();
         global.flappyBird.print();
         startScreen.print();
@@ -201,6 +295,7 @@ const screens = {
 screens.GAME = {
     print(){
         background.print();
+        global.pipes.print();
         global.floor.print();
         global.flappyBird.print();
     },
@@ -208,6 +303,8 @@ screens.GAME = {
         global.flappyBird.fly();
     },
     reload(){
+        global.pipes.reload();
+        global.floor.reload();
         global.flappyBird.reload();
     }
 };
